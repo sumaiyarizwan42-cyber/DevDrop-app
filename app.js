@@ -1,6 +1,6 @@
 // 1. SUPABASE SETUP
 const supabaseUrl = 'https://aptvcfimqfeasdbjocnq.supabase.co';
-const supabaseKey = 'sb_publishable_m1QwUH9ZpVtv4i1yA3c6kg_A6cGkXiT';
+const supabaseKey = 'YOUR_KEY_HERE';
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
 let currentUser = null;
