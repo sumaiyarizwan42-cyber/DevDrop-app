@@ -1,6 +1,6 @@
 // 1. SUPABASE SETUP
 const supabaseUrl = 'https://aptvcfimqfeasdbjocnq.supabase.co';
-const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwdHZjZmltcWZlYXNkYmpvY25xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzNTUwMzgsImV4cCI6MjEwMzkzMTAzOH0.c4eL3Kt2P5WtNbf4kgpmdLrPYvsg_EPB-WZhQaYFH3g';
+const supabaseKey = 'sb_publishable_GzGrKBR_dgucIW_9Sq1JYw_O65X0yoi';
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
 
 let currentUser = null;
