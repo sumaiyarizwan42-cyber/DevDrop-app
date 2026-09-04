@@ -1,7 +1,16 @@
 // 1. SUPABASE SETUP
 const supabaseUrl = 'https://aptvcfimqfeasdbjocnq.supabase.co';
-const supabaseKey = 'sb_publishable_GzGrKBR_dgucIW_9Sq1JYw_O65X0yoi';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImFwdHZjZmltcWZlYXNkYmpvY25xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzNTUwMzgsImV4cCI6MjEwMzkzMTAzOH0.c4eL3Kt2P5WtNbf4kgpmdLrPYvsg_EPB-WZhQaYFH3g'; 
+console.log("Supabase URL:", supabaseUrl); // Check this in the Console
 const supabaseClient = supabase.createClient(supabaseUrl, supabaseKey);
+
+
+
+// Test the connection immediately
+supabaseClient.from('Projects').select('*').then(res => {
+    console.log("Database Test Result:", res);
+});
+
 
 let currentUser = null;
 
@@ -106,8 +115,7 @@ async function navigateTo(page, projectId = null) {
                 <div class="glass-card p-6 bg-white border"><h3 class="font-bold text-lg mb-4 text-slate-800">Live Pulse</h3><div class="space-y-3 text-sm text-slate-600"><p>• TechCorp posted a new project</p></div></div>
             </div>`;
     } 
-  
-   else if (page === 'jobs') {
+    else if (page === 'jobs') {
         if (projectId) {
             // DETAIL VIEW
             const p = projects.find(item => item.id == projectId);
@@ -151,13 +159,19 @@ async function navigateTo(page, projectId = null) {
         content.innerHTML = `<div class="max-w-xl mx-auto bg-white p-10 rounded-3xl shadow-sm border text-center"><h2 class="text-3xl font-bold mb-8">${isInd ? 'Industrialist' : 'Student'} Profile</h2><div class="grid grid-cols-3 gap-4 mb-8"><div class="bg-blue-600 p-4 rounded-2xl text-white"><p class="text-xs opacity-75">${isInd ? 'Received' : 'Active'}</p><p class="text-xl font-bold">5</p></div><div class="bg-gray-100 p-4 rounded-2xl"><p class="text-xs text-slate-500">${isInd ? 'Selected' : 'Sent'}</p><p class="text-xl font-bold">2</p></div><div class="bg-gray-100 p-4 rounded-2xl"><p class="text-xs text-slate-500">Done</p><p class="text-xl font-bold">3</p></div></div><div class="space-y-4 text-left border-t pt-6 text-slate-700">${isInd ? `<p class="flex justify-between"><strong>Company Name:</strong> <span>TechCorp Solutions</span></p>` : `<p class="flex justify-between"><strong>Institute:</strong> <span>National University</span></p>`}</div></div>`;
     }
     else if (page === 'drops') {
-        content.innerHTML = `
-            <div class="flex justify-between mb-8">
-                <h2 class="text-3xl font-bold">Industry Insights</h2>
-                ${currentUser.role === 'industrialist' ? `<button onclick="alert('Insight Posted!')" class="bg-blue-600 text-white px-4 py-2 rounded-lg">+ Add Insight</button>` : ''}
-            </div>
-            <div class="bg-white p-6 rounded-2xl border"><h3 class="font-bold text-lg text-blue-600">TechCorp Inc.</h3><p class="mt-2">"Understanding Python is a necessity."</p></div>`;
-    }
+    content.innerHTML = `
+        <div class="flex justify-between mb-8">
+            <h2 class="text-3xl font-bold">Industry Insights</h2>
+            ${currentUser.role === 'industrialist' ? `<button onclick="postInsight()" class="bg-blue-600 text-white px-4 py-2 rounded-lg">+ Add Insight</button>` : ''}
+        </div>
+        <div id="insightsContainer" class="space-y-4"></div>`;
+    
+    // Fetch insights from database
+    const { data: insights } = await supabaseClient.from('Insights').select('*');
+    insights?.forEach(i => {
+        content.innerHTML += `<div class="bg-white p-6 rounded-2xl border"><h3 class="font-bold text-lg text-blue-600">${i.company}</h3><p class="mt-2">${i.content}</p></div>`;
+    });
+
 }
 async function submitProject() {
     const link = document.getElementById('solutionLink').value;
@@ -202,4 +216,18 @@ async function postChallenge() {
         document.getElementById('postModal').classList.add('hidden');
         navigateTo('jobs');
     }
+    async function postInsight() {
+    const content = prompt("Write your industry insight:");
+    if (content) {
+        const { error } = await supabaseClient.from('Insights').insert([{ 
+            company: currentUser.name, 
+            content: content 
+        }]);
+        if (error) alert("Error: " + error.message);
+        else {
+            alert("Insight Posted!");
+            navigateTo('drops');
+        }
+    }
+}
 }
