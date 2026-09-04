@@ -88,6 +88,12 @@ async function navigateTo(page, projectId = null) {
     content.innerHTML = '';
     content.className = "max-w-6xl mx-auto p-6 animate-fade-in";
 
+    // DEFINE THIS HERE SO EVERYONE CAN SEE IT
+    const projects = [
+        { id: 1, title: "Predictive Maintenance AI", company: "TechCorp Inc.", description: "Analyze sensor data to predict machine failure.", skills: "Python, AI" },
+        { id: 2, title: "Green Energy Dashboard", company: "EcoVolt", description: "Design a dashboard to monitor solar energy usage.", skills: "React, Tailwind" }
+    ];
+
     if (page === 'home') {
         const isInd = currentUser.role === 'industrialist';
         content.innerHTML = `
@@ -100,42 +106,42 @@ async function navigateTo(page, projectId = null) {
                 <div class="glass-card p-6 bg-white border"><h3 class="font-bold text-lg mb-4 text-slate-800">Live Pulse</h3><div class="space-y-3 text-sm text-slate-600"><p>• TechCorp posted a new project</p></div></div>
             </div>`;
     } 
-    if (page === 'jobs') {
+  
+   else if (page === 'jobs') {
         if (projectId) {
-            // Fetch single project details
-            const { data: p } = await supabaseClient.from('Projects').select('*').eq('id', projectId).single();
+            // DETAIL VIEW
+            const p = projects.find(item => item.id == projectId);
             content.innerHTML = `
                 <button onclick="navigateTo('jobs')" class="mb-4 text-blue-600 font-bold">&larr; Back</button>
                 <div class="bg-white p-8 rounded-2xl shadow-sm border">
                     <h2 class="text-3xl font-bold">${p.title}</h2>
                     <p class="text-blue-600 font-semibold mb-6">${p.company}</p>
                     <p class="mb-6 text-slate-700">${p.description}</p>
-                    <div class="bg-gray-50 p-4 rounded-lg mb-6"><strong>Skills:</strong> ${p.skills}</div>
-                    ${currentUser.role === 'student' ? `<button onclick="openModal()" class="w-full bg-blue-600 py-4 rounded-xl text-white font-bold">Submit Proposal / CV</button>` : ''}
+                    <div class="grid grid-cols-2 gap-4 mb-6">
+                        <div class="bg-gray-50 p-4 rounded-lg"><strong>Skills:</strong> ${p.skills}</div>
+                    </div>
+                    ${currentUser.role === 'student' ? 
+                        `<button onclick="openModal()" class="w-full bg-blue-600 py-4 rounded-xl text-white font-bold">Submit Proposal / CV</button>` : 
+                        `<p class="text-slate-500 italic">This is your active challenge posting.</p>`}
                 </div>`;
-        }  else {
+        } else {
+            // LIST VIEW (Uses the local 'projects' array defined at the top of navigateTo)
             content.innerHTML = `<div class="flex justify-between mb-6"><h2 class="text-2xl font-bold">Explore Challenges</h2>
                 ${currentUser.role === 'industrialist' ? '<button onclick="openPostModal()" class="bg-blue-600 text-white px-4 py-2 rounded-lg font-bold">+ Post</button>' : ''}
             </div>`;
             
-            const { data: projects, error } = await supabaseClient.from('Projects').select('*');
-            
-            if (error) { content.innerHTML += `<p class="text-red-500">Error: ${error.message}</p>`; } 
-            else {
-                projects.forEach(p => {
-                    // USE CAPITAL T AND C TO MATCH SUPABASE
-                    content.innerHTML += `
-                        <div class="bg-white p-6 rounded-xl border mb-4 flex justify-between items-center">
-                            <div>
-                                <h3 class="font-bold text-xl">${p.Title || 'No Title'}</h3>
-                                <p class="text-sm text-blue-600">${p.Company || 'No Company'}</p>
-                            </div>
-                            <button onclick="navigateTo('jobs', ${p.id})" class="bg-slate-900 px-6 py-3 rounded-xl text-white font-semibold">View</button>
-                        </div>`;
-                });
-            }
+            projects.forEach(p => {
+                content.innerHTML += `
+                    <div class="bg-white p-6 rounded-xl border mb-4 flex justify-between items-center">
+                        <div>
+                            <h3 class="font-bold text-xl">${p.title}</h3>
+                            <p class="text-sm text-blue-600">${p.company}</p>
+                        </div>
+                        <button onclick="navigateTo('jobs', ${p.id})" class="bg-slate-900 px-6 py-3 rounded-xl text-white font-semibold">View</button>
+                    </div>`;
+            });
         }
-    } 
+    }
     else if (page === 'messaging') {
         const list = currentUser.role === 'industrialist' ? [{n: "John Student", r: "UET Student"}] : [{n: "TechCorp Mentor", r: "AI Engineer"}];
         content.innerHTML = `<div class="flex gap-6 h-[60vh]"><div class="w-1/3 bg-white p-4 rounded-xl border">${list.map(i => `<div class="p-3 bg-gray-50 mb-2 rounded-lg font-bold cursor-pointer hover:bg-blue-50">${i.n}<br/><span class="text-xs text-blue-600">${i.r}</span></div>`).join('')}</div><div class="w-2/3 bg-white p-4 rounded-xl border flex flex-col"><div id="chatMessages" class="flex-1 overflow-y-auto mb-4"></div><input type="text" id="chatInput" onkeypress="handleChat(event)" class="w-full border p-3 rounded-lg" placeholder="Type message..."></div></div>`;
